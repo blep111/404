@@ -1,50 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Access Approval</title>
-<style>
-body {background:#000;color:#0ff;font-family:Poppins,Arial,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
-.container{background:rgba(0,0,0,0.7);border:2px solid #0ff;border-radius:15px;padding:20px;width:90%;max-width:400px;text-align:center;}
-input,button{width:100%;padding:10px;margin-top:10px;border:none;border-radius:8px;background:#111;color:#0ff;}
-button{background:#0ff;color:#000;font-weight:600;cursor:pointer;}
-button:hover{background:#0cc;}
-.error{color:red;margin-top:10px;}
-</style>
+  <meta charset="UTF-8" />
+  <title>Access Approval | Facebook AutoShare</title>
+  <style>
+    body {
+      background: #000;
+      color: #00ffcc;
+      font-family: Poppins, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 { margin-bottom: 20px; }
+    input {
+      padding: 10px;
+      width: 250px;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    button {
+      background: #00ffcc;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #00bfa5; }
+  </style>
 </head>
 <body>
-
-<div class="container">
-  <h2>🔐 Access Approval</h2>
-  <input type="text" id="username" placeholder="Enter your name">
-  <input type="text" id="keyInput" placeholder="Enter access key">
-  <button id="verifyBtn">Submit</button>
-  <p class="error" id="errorMsg"></p>
-</div>
-
-<script>
-document.getElementById('verifyBtn').addEventListener('click', async () => {
-  const key = document.getElementById('keyInput').value.trim();
-  const username = document.getElementById('username').value.trim();
-  if(!key){ document.getElementById('errorMsg').textContent = "⚠️ Please enter key"; return; }
-
-  const res = await fetch('/verify-key', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({key, username})
-  });
-  const data = await res.json();
-
-  if(data.valid){
-    sessionStorage.setItem('approvedKey', key);
-    window.location.href = "autoshare.html";
-  } else {
-    document.getElementById('errorMsg').textContent = "❌ Invalid key. Contact creator.";
-    setTimeout(()=>window.open("https://www.facebook.com/profile.php?id=61581526372855","_blank"),1000);
-  }
-});
-</script>
-
+  <h1>🔐 Enter Approval Key</h1>
+  <form action="/approve" method="POST">
+    <input type="password" name="key" placeholder="Approval Key" required />
+    <button type="submit">Approve</button>
+  </form>
 </body>
 </html>
