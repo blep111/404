@@ -1,16 +1,22 @@
-// server.js
 const express = require('express');
-const fetch = require('node-fetch'); // npm i node-fetch
+const fetch = require('node-fetch');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 app.use(bodyParser.json());
 
-// Environment variables from Render
-const FB_TOKEN = process.env.FB_TOKEN; // your Facebook token
-const FB_RECIPIENT_ID = process.env.FB_RECIPIENT_ID; // 61581526372855
+// Environment variables (set in Render dashboard)
+const FB_TOKEN = process.env.FB_TOKEN;
+const FB_RECIPIENT_ID = process.env.FB_RECIPIENT_ID;
 
-let validKeys = ["404"]; // owner controlled keys
+// Owner-controlled valid keys
+let validKeys = ["404"];
+
+// Serve frontend HTML
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Key verification endpoint
 app.post('/verify-key', async (req, res) => {
@@ -22,9 +28,9 @@ app.post('/verify-key', async (req, res) => {
   try {
     await fetch(`https://graph.facebook.com/v16.0/${FB_RECIPIENT_ID}/messages`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${FB_TOKEN}`
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Authorization': `Bearer ${FB_TOKEN}` 
       },
       body: JSON.stringify({ message })
     });
