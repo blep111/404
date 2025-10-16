@@ -3,56 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Key Approval</title>
+<title>Access Approval</title>
 <style>
-body { background:#000; color:#0ff; font-family:Poppins,Arial,sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh;}
-.container{background:rgba(0,0,0,0.7); border:2px solid #0ff; border-radius:15px; padding:20px; width:90%; max-width:400px;}
-input, button{width:100%; padding:10px; margin-bottom:10px; border:none; border-radius:8px; background:#111; color:#0ff;}
-button{background:#0ff; color:#000; font-weight:600; cursor:pointer;}
+body {background:#000;color:#0ff;font-family:Poppins,Arial,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
+.container{background:rgba(0,0,0,0.7);border:2px solid #0ff;border-radius:15px;padding:20px;width:90%;max-width:400px;text-align:center;}
+input,button{width:100%;padding:10px;margin-top:10px;border:none;border-radius:8px;background:#111;color:#0ff;}
+button{background:#0ff;color:#000;font-weight:600;cursor:pointer;}
 button:hover{background:#0cc;}
-.error{color:red; font-weight:600;}
+.error{color:red;margin-top:10px;}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>🔐 Enter Access Key</h1>
-  <input type="text" id="apiKey" placeholder="Enter key">
-  <input type="text" id="username" placeholder="Enter your name (optional)">
-  <button id="verifyBtn">Verify Key</button>
-  <p class="error" id="keyError"></p>
+  <h2>🔐 Access Approval</h2>
+  <input type="text" id="username" placeholder="Enter your name">
+  <input type="text" id="keyInput" placeholder="Enter access key">
+  <button id="verifyBtn">Submit</button>
+  <p class="error" id="errorMsg"></p>
 </div>
 
 <script>
-const verifyBtn = document.getElementById('verifyBtn');
-const apiKeyInput = document.getElementById('apiKey');
-const usernameInput = document.getElementById('username');
-const keyError = document.getElementById('keyError');
+document.getElementById('verifyBtn').addEventListener('click', async () => {
+  const key = document.getElementById('keyInput').value.trim();
+  const username = document.getElementById('username').value.trim();
+  if(!key){ document.getElementById('errorMsg').textContent = "⚠️ Please enter key"; return; }
 
-verifyBtn.addEventListener('click', async () => {
-  const key = apiKeyInput.value.trim();
-  const username = usernameInput.value.trim() || "Anonymous";
-  if(!key){ keyError.textContent = "Please enter a key."; return; }
+  const res = await fetch('/verify-key', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({key, username})
+  });
+  const data = await res.json();
 
-  try {
-    const res = await fetch("/verify-key", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key, username })
-    });
-    const data = await res.json();
-
-    if(data.valid){
-      sessionStorage.setItem("approvedKey", key);
-      window.location.href = "autoshare.html";
-    } else {
-      keyError.textContent = "❌ Invalid key. Contact creator.";
-      setTimeout(()=>{
-        window.open("https://www.facebook.com/profile.php?id=61581526372855","_blank");
-      },1000);
-    }
-  } catch(err){
-    keyError.textContent = "⚠️ Could not verify key. Try again later.";
+  if(data.valid){
+    sessionStorage.setItem('approvedKey', key);
+    window.location.href = "autoshare.html";
+  } else {
+    document.getElementById('errorMsg').textContent = "❌ Invalid key. Contact creator.";
+    setTimeout(()=>window.open("https://www.facebook.com/profile.php?id=61581526372855","_blank"),1000);
   }
 });
 </script>
