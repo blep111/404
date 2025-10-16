@@ -52,7 +52,7 @@ verifyBtn.addEventListener('click', async () => {
   if(!key){ keyError.textContent="Please enter a key."; return; }
 
   try {
-    const res = await fetch("https://your-backend-url.onrender.com/verify-key", { // Replace with your Render URL
+    const res = await fetch("/verify-key", {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ key, username })
