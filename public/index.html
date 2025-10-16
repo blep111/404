@@ -47,12 +47,12 @@ const keyError = document.getElementById('keyError');
 
 verifyBtn.addEventListener('click', async () => {
   const key = apiKeyInput.value.trim();
-  const username = usernameInput.value.trim() || "Anonymous User";
+  const username = usernameInput.value.trim() || "Anonymous";
 
   if(!key){ keyError.textContent="Please enter a key."; return; }
 
   try {
-    const res = await fetch("https://your-backend.onrender.com/verify-key", { // Replace with your backend URL
+    const res = await fetch("https://your-backend.onrender.com/verify-key", { // replace with your backend URL
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ key, username })
@@ -108,4 +108,4 @@ submitBtn.addEventListener('click', async () => {
 </script>
 
 </body>
-    </html>
+</html>
