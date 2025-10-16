@@ -6,17 +6,15 @@ const path = require('path');
 const app = express();
 app.use(bodyParser.json());
 
-// Environment variables (set in Render dashboard)
+// Serve static frontend
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Environment variables
 const FB_TOKEN = process.env.FB_TOKEN;
 const FB_RECIPIENT_ID = process.env.FB_RECIPIENT_ID;
 
-// Owner-controlled valid keys
+// Owner-controlled keys
 let validKeys = ["404"];
-
-// Serve frontend HTML
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
 
 // Key verification endpoint
 app.post('/verify-key', async (req, res) => {
@@ -42,4 +40,11 @@ app.post('/verify-key', async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 3000, () => console.log("Backend running"));
+// Render / production fallback for frontend routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
