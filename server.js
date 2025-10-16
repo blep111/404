@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
 app.post("/approve", (req, res) => {
   const { key } = req.body;
   if (key === process.env.APPROVAL_KEY) {
-    res.redirect("/share.html");
+    res.redirect("/autoshare.html");
   } else {
     res.send(`
     <html><body style="background:black;color:red;text-align:center;padding-top:100px;">
