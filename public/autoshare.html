@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoShare</title>
+<style>
+body { background:#000; color:#0ff; font-family:Poppins,Arial,sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh;}
+.container{background:rgba(0,0,0,0.7); border:2px solid #0ff; border-radius:15px; padding:20px; width:90%; max-width:500px;}
+input, textarea, button{width:100%; padding:10px; margin-bottom:10px; border:none; border-radius:8px; background:#111; color:#0ff;}
+button{background:#0ff; color:#000; font-weight:600; cursor:pointer;}
+button:hover{background:#0cc;}
+pre{background:#111; padding:10px; border:1px solid #0ff; border-radius:8px; white-space:pre-wrap;}
+.error{color:red; font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Facebook AutoShare Panel</h1>
+  <textarea id="cookieInput" rows="3" placeholder="Enter Facebook cookie"></textarea>
+  <input type="text" id="linkInput" placeholder="Enter post link">
+  <input type="number" id="limitInput" placeholder="Share limit">
+  <button id="submitBtn">Start AutoShare</button>
+  <pre id="result">No data yet.</pre>
+  <p class="error" id="errorMsg"></p>
+</div>
+
+<script>
+// Check session storage for approved key
+if(sessionStorage.getItem("approvedKey") !== "404"){
+  alert("You must approve the key first!");
+  window.location.href = "approval.html";
+}
+
+// AutoShare API logic
+const submitBtn = document.getElementById('submitBtn');
+const cookieInput = document.getElementById('cookieInput');
+const linkInput = document.getElementById('linkInput');
+const limitInput = document.getElementById('limitInput');
+const result = document.getElementById('result');
+const errorMsg = document.getElementById('errorMsg');
+
+submitBtn.addEventListener('click', async () => {
+  const cookie = cookieInput.value.trim();
+  const link = linkInput.value.trim();
+  const limit = limitInput.value.trim();
+  if(!cookie || !link){ errorMsg.textContent="Fill both cookie and link"; return; }
+
+  errorMsg.textContent="";
+  result.textContent="⏳ Processing...";
+
+  const params = new URLSearchParams({cookie, link});
+  if(limit) params.append("limit", limit);
+
+  const apiUrl = "https://vern-rest-api.vercel.app/api/autoshare?" + params.toString();
+
+  try{
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    result.textContent = JSON.stringify(data,null,2);
+  }catch(e){
+    result.textContent="";
+    errorMsg.textContent="❌ Error: "+e.message;
+  }
+});
+</script>
+
+</body>
+</html>
