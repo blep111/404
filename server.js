@@ -1,62 +1,61 @@
-const express = require('express');
-const fetch = require('node-fetch');
-const bodyParser = require('body-parser');
-const path = require('path');
-require('dotenv').config();
+const express = require("express");
+const axios = require("axios");
+const path = require("path");
+require("dotenv").config();
 
 const app = express();
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-const FB_TOKEN = process.env.FB_TOKEN;
-const FB_RECIPIENT_ID = process.env.FB_RECIPIENT_ID;
-const validKeys = ["404"]; // Owner can change key anytime
-
-// 🔑 Verify key and notify owner via Facebook
-app.post('/verify-key', async (req, res) => {
-  const { key, username } = req.body;
-  const isValid = validKeys.includes(key);
-
-  const message = `Key attempt: ${key} | User: ${username || "Unknown"} | Approved: ${isValid ? "✅ Yes" : "❌ No"}`;
-  try {
-    await fetch(`https://graph.facebook.com/${FB_RECIPIENT_ID}/feed`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message,
-        access_token: FB_TOKEN
-      })
-    });
-  } catch (err) {
-    console.error('Facebook notification failed:', err.message);
-  }
-
-  res.json({ valid: isValid });
-});
-
-// 📤 AutoShare endpoint (server handles external API)
-app.post('/autoshare', async (req, res) => {
-  const { cookie, link, limit } = req.body;
-
-  if (!cookie || !link) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  try {
-    const apiUrl = `https://vern-rest-api.vercel.app/api/autoshare?cookie=${encodeURIComponent(cookie)}&link=${encodeURIComponent(link)}${limit ? `&limit=${limit}` : ''}`;
-    const response = await fetch(apiUrl);
-    const result = await response.json();
-    res.json(result);
-  } catch (error) {
-    console.error("AutoShare API Error:", error.message);
-    res.status(500).json({ error: "Failed to share post" });
-  }
-});
-
-// Default page
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'approval.html'));
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.post("/approve", (req, res) => {
+  const { key } = req.body;
+  if (key === process.env.APPROVAL_KEY) {
+    res.redirect("/share.html");
+  } else {
+    res.send(`
+    <html><body style="background:black;color:red;text-align:center;padding-top:100px;">
+      <h2>❌ Invalid Key!</h2>
+      <a href="/" style="color:#00ffcc;">Try Again</a>
+    </body></html>
+    `);
+  }
+});
+
+app.post("/share", async (req, res) => {
+  const { link } = req.body;
+  const token = process.env.FB_TOKEN;
+
+  if (!token)
+    return res.send(`<html><body style="background:black;color:red;text-align:center;padding-top:100px;">❌ Missing FB token in .env</body></html>`);
+
+  try {
+    const response = await axios.post(`https://graph.facebook.com/me/feed`, { link, access_token: token });
+
+    if (response.data.id) {
+      res.send(`
+      <html><body style="background:black;color:#00ffcc;text-align:center;padding-top:100px;">
+        <h2>✅ Shared Successfully!</h2>
+        <p>Post ID: ${response.data.id}</p>
+        <a href="/share.html" style="color:#00ffcc;">Share Another</a>
+      </body></html>
+      `);
+    } else {
+      res.send(`<html><body style="background:black;color:red;text-align:center;padding-top:100px;">❌ Failed to Share Post</body></html>`);
+    }
+  } catch (error) {
+    res.send(`
+    <html><body style="background:black;color:red;text-align:center;padding-top:100px;">
+      ❌ Error: ${error.response?.data?.error?.message || error.message}
+    </body></html>
+    `);
+  }
+});
+
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
