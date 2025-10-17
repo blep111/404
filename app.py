@@ -1,90 +1,47 @@
-from flask import Flask, request, redirect, send_from_directory
-import requests, re, random, os
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+import requests
+import os
 
-app = Flask(__name__, static_folder="public")
+app = Flask(__name__, static_folder="public", template_folder="public")
 
-OWNER_FB = "https://www.facebook.com/profile.php?id=61582034805699"
-APPROVAL_KEY = os.environ.get("APPROVAL_KEY", "404")
+OWNER_URL = "https://facebook.com/your.owner.profile"  # change this
+API_URL = "https://your-real-autoshare-api.com/share"
+APPROVED_KEY = "mysecretkey"
 
-ua_list = [
-    "Mozilla/5.0 (Linux; Android 10; Wildfire E Lite)...",
-    "Mozilla/5.0 (Linux; Android 11; KINGKONG 5 Pro)...",
-    "Mozilla/5.0 (Linux; Android 11; G91 Pro)..."
-]
-
-def extract_token(cookie, ua):
-    try:
-        cookies = {i.split('=')[0]: i.split('=')[1] for i in cookie.split('; ') if '=' in i}
-        res = requests.get("https://business.facebook.com/business_locations", headers={
-            "user-agent": ua,
-            "referer": "https://www.facebook.com/"
-        }, cookies=cookies)
-        token_match = re.search(r'(EAAG\w+)', res.text)
-        return token_match.group(1) if token_match else None
-    except:
-        return None
-
-
-@app.route("/", methods=["GET"])
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return send_from_directory("public", "index.html")
-
-
-@app.route("/verify", methods=["POST"])
-def verify():
-    key = request.form.get("key")
-    if key == APPROVAL_KEY:
-        return send_from_directory("public", "share.html")
-    else:
-        return f"""
-        <html><head>
-        <meta http-equiv='refresh' content='2;url={OWNER_FB}'>
-        </head>
-        <body style='background:black;color:#ff5555;text-align:center;padding-top:100px;font-family:Poppins,sans-serif;'>
-        ❌ Wrong key! Redirecting to owner for approval...
-        </body></html>
-        """
-
-
-@app.route("/share.html", methods=["GET"])
-def block_direct_access():
-    # Always redirect to key page unless form submission approved
-    return redirect("/")
-
-
-@app.route("/api/share", methods=["POST"])
-def share():
-    data = request.get_json()
-    cookie = data.get("cookie")
-    post_link = data.get("link")
-    limit = int(data.get("limit", 0))
-
-    if not cookie or not post_link or not limit:
-        return "⚠️ Missing input."
-
-    ua = random.choice(ua_list)
-    token = extract_token(cookie, ua)
-    if not token:
-        return "❌ Token extraction failed."
-
-    cookies = {i.split('=')[0]: i.split('=')[1] for i in cookie.split('; ') if '=' in i}
-    success = 0
-
-    for _ in range(limit):
-        res = requests.post(
-            "https://graph.facebook.com/v18.0/me/feed",
-            params={"link": post_link, "access_token": token, "published": 0},
-            headers={"user-agent": ua},
-            cookies=cookies
-        )
-        if "id" in res.text:
-            success += 1
+    if request.method == "POST":
+        key = request.form.get("key")
+        if key == APPROVED_KEY:
+            return redirect(url_for("share_page"))
         else:
-            break
+            return redirect(OWNER_URL)
+    return render_template("index.html")
 
-    return f"✅ Successfully shared {success} time(s)."
-
+@app.route("/share", methods=["GET", "POST"])
+def share_page():
+    if request.method == "POST":
+        post_url = request.form.get("post_url")
+        amount = request.form.get("amount")
+        try:
+            r = requests.get(f"{API_URL}?post={post_url}&amount={amount}")
+            data = r.json()
+            if data.get("status") == "success":
+                return render_template(
+                    "share.html",
+                    success=True,
+                    message="✅ Share successful!",
+                    shares=data.get("shared_count", "N/A"),
+                )
+            else:
+                return render_template(
+                    "share.html",
+                    success=False,
+                    message=f"❌ {data.get('message', 'Unknown error')}",
+                )
+        except Exception as e:
+            return render_template("share.html", success=False, message=str(e))
+    return render_template("share.html", success=None)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
