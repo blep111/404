@@ -36,7 +36,6 @@ def index():
             session["approved"] = True
             return redirect(url_for("share_page"))
         else:
-            # automatic redirect to owner FB after 1 second
             return f'''
             <html>
                 <head>
