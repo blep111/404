@@ -1,100 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Matrix AutoShare</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<title>Share - XrenBoost | AutoShare</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-body {
-  background: radial-gradient(circle at top, #000 0%, #001a1a 100%);
-  color: #00ffcc;
-  font-family: 'Poppins', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 80px;
-  overflow: hidden;
-}
-h2 {
-  font-size: 2em;
-  text-shadow: 0 0 10px #00ffcc;
-}
-form {
-  margin-top: 30px;
-  text-align: center;
-  background: rgba(0, 20, 20, 0.6);
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 0 20px #00ffcc;
-}
-input, button {
-  background: transparent;
-  border: 1px solid #00ffcc;
-  color: #00ffcc;
-  border-radius: 8px;
-  padding: 10px;
-  margin: 10px;
-  outline: none;
-}
-button {
-  background: #00ffcc;
-  color: #000;
-  font-weight: 600;
-  transition: 0.3s;
-}
-button:hover {
-  box-shadow: 0 0 15px #00ffcc;
-  transform: scale(1.05);
-}
-.success {
-  color: #00ff88;
-  text-shadow: 0 0 10px #00ff88;
-  margin-top: 20px;
-}
-.error {
-  color: #ff4444;
-  text-shadow: 0 0 10px #ff4444;
-  margin-top: 20px;
-}
-.matrix-bg {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: -1;
-  color: rgba(0,255,204,0.15);
-  white-space: nowrap;
-  animation: rain 4s linear infinite;
-  font-size: 12px;
-}
-@keyframes rain {
-  0% {transform: translateY(-100%)}
-  100% {transform: translateY(100%)}
-}
+body{background:#000;color:#00ffcc;font-family:Poppins,Arial,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+.card{background:rgba(0,0,0,0.7);padding:20px;border:2px solid #00ffcc;border-radius:12px;width:100%;max-width:600px}
+textarea,input{width:100%;padding:10px;border-radius:8px;border:none;background:#111;color:#00ffcc;margin-bottom:10px}
+button{padding:10px 14px;border-radius:8px;border:none;background:#00ffcc;color:#000;font-weight:700;cursor:pointer}
+pre{background:#000;text-align:left;color:#00ffcc;padding:10px;border-radius:8px;border:1px solid #00ffcc;height:200px;overflow:auto}
 </style>
 </head>
 <body>
-<div class="matrix-bg">
-<pre>
-010101001010100100101010100101001010101010010010101001010010
-010010101001001010010010101001001010010101010010101001001010
-010010010101010010010101001010010101010010010101010010010101
-</pre>
+<div class="card">
+<h3>📤 Facebook AutoShare</h3>
+<textarea id="cookie" rows="3" placeholder="Enter Facebook cookie (raw)"></textarea>
+<input id="link" type="text" placeholder="Post link (https://...)"/>
+<input id="limit" type="number" placeholder="Limit"/>
+<button id="sendBtn">Start Sharing</button>
+<pre id="log">No result yet.</pre>
 </div>
-
-<h2>🚀 MATRIX AUTOSHARE PORTAL</h2>
-<form method="POST">
-  <input type="text" name="post_url" placeholder="Facebook Post URL" required>
-  <input type="number" name="amount" placeholder="Number of Shares" required>
-  <br>
-  <button type="submit">Start Sharing</button>
-</form>
-
-{% if success == True %}
-  <p class="success">{{ message }}</p>
-  <p>Shared: {{ shares }} times</p>
-{% elif success == False %}
-  <p class="error">{{ message }}</p>
-{% endif %}
+<script>
+document.getElementById('sendBtn').addEventListener('click', async()=>{
+  const cookie=document.getElementById('cookie').value.trim()
+  const link=document.getElementById('link').value.trim()
+  const limit=document.getElementById('limit').value.trim()
+  const log=document.getElementById('log')
+  if(!cookie||!link||!limit){log.textContent='⚠️ Missing input';return}
+  log.textContent='⏳ Processing...'
+  try{
+    const res=await fetch('/api/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cookie,link,limit})})
+    const data=await res.json()
+    log.textContent=JSON.stringify(data,null,2)
+  }catch(err){log.textContent='❌ '+err.message}
+})
+</script>
 </body>
 </html>
