@@ -9,7 +9,7 @@ body{background:#000;color:#00ffcc;font-family:Poppins,Arial,sans-serif;display:
 .card{background:rgba(0,0,0,0.7);padding:20px;border:2px solid #00ffcc;border-radius:12px;width:100%;max-width:600px}
 textarea,input{width:100%;padding:10px;border-radius:8px;border:none;background:#111;color:#00ffcc;margin-bottom:10px}
 button{padding:10px 14px;border-radius:8px;border:none;background:#00ffcc;color:#000;font-weight:700;cursor:pointer}
-pre{background:#000;text-align:left;color:#00ffcc;padding:10px;border-radius:8px;border:1px solid #00ffcc;height:200px;overflow:auto}
+#log{background:#000;color:#00ffcc;padding:10px;border-radius:8px;border:1px solid #00ffcc;height:50px;overflow:auto;text-align:center;font-weight:bold;}
 </style>
 </head>
 <body>
@@ -19,7 +19,7 @@ pre{background:#000;text-align:left;color:#00ffcc;padding:10px;border-radius:8px
 <input id="link" type="text" placeholder="Post link (https://...)"/>
 <input id="limit" type="number" placeholder="Limit"/>
 <button id="sendBtn">Start Sharing</button>
-<pre id="log">No result yet.</pre>
+<div id="log">No result yet.</div>
 </div>
 <script>
 document.getElementById('sendBtn').addEventListener('click', async()=>{
@@ -30,9 +30,13 @@ document.getElementById('sendBtn').addEventListener('click', async()=>{
   if(!cookie||!link||!limit){log.textContent='⚠️ Missing input';return}
   log.textContent='⏳ Processing...'
   try{
-    const res=await fetch('/api/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cookie,link,limit})})
-    const data=await res.json()
-    log.textContent=JSON.stringify(data,null,2)
+    const res=await fetch('/api/share',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cookie,link,limit})
+    })
+    const text=await res.text()
+    log.textContent=text
   }catch(err){log.textContent='❌ '+err.message}
 })
 </script>
