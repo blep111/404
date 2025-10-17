@@ -1,9 +1,7 @@
-from flask import Flask, request, redirect, url_for, session, send_from_directory, render_template_string
+from flask import Flask, request, redirect, url_for, send_from_directory
 import requests, re, random, os
 
 app = Flask(__name__, static_folder="public")
-app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
-
 OWNER_FB = "https://www.facebook.com/profile.php?id=61582034805699"
 APPROVAL_KEY = os.environ.get("APPROVAL_KEY", "404")
 
@@ -25,43 +23,38 @@ def extract_token(cookie, ua):
     except:
         return None
 
-@app.route("/", methods=["GET", "POST"])
+
+@app.route("/", methods=["GET"])
 def index():
-    session.clear()  # Reset key on refresh
-    if request.method == "POST":
-        key = request.form.get("key")
-        if key == APPROVAL_KEY:
-            session["approved"] = True
-            return redirect(url_for("share_page"))
-        else:
-            # Redirect to owner FB with message
-            return f'''
-            <html>
-                <head>
-                    <meta http-equiv="refresh" content="2;url={OWNER_FB}">
-                </head>
-                <body style="background:black;color:#ff6b6b;text-align:center;padding-top:100px;font-family:Poppins,Arial,sans-serif;">
-                    ❌ Invalid key! Please contact the owner for approval. Redirecting...
-                </body>
-            </html>
-            '''
     return send_from_directory("public", "index.html")
 
-@app.route("/share", methods=["GET"])
-def share_page():
-    if not session.get("approved"):
-        return redirect(url_for("index"))
-    return send_from_directory("public", "share.html")
+
+@app.route("/verify", methods=["POST"])
+def verify():
+    key = request.form.get("key")
+    if key == APPROVAL_KEY:
+        return send_from_directory("public", "share.html")
+    else:
+        # redirect to owner fb
+        return f"""
+        <html>
+        <head>
+        <meta http-equiv='refresh' content='2;url={OWNER_FB}'>
+        </head>
+        <body style='background:black;color:#ff6b6b;text-align:center;padding-top:100px;font-family:Poppins,Arial,sans-serif;'>
+        ❌ Invalid key! Please contact the owner for approval. Redirecting...
+        </body>
+        </html>
+        """
+
 
 @app.route("/api/share", methods=["POST"])
 def share():
-    if not session.get("approved"):
-        return "Key not approved. Please refresh and enter the correct key."
-
     data = request.get_json()
     cookie = data.get("cookie")
     post_link = data.get("link")
     limit = int(data.get("limit", 0))
+
     if not cookie or not post_link or not limit:
         return "⚠️ Missing input."
 
@@ -72,6 +65,7 @@ def share():
 
     cookies = {i.split('=')[0]: i.split('=')[1] for i in cookie.split('; ') if '=' in i}
     success = 0
+
     for _ in range(limit):
         res = requests.post(
             "https://graph.facebook.com/v18.0/me/feed",
@@ -85,6 +79,7 @@ def share():
             break
 
     return f"✅ Successfully shared {success} time(s)."
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
