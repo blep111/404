@@ -1,14 +1,15 @@
-from flask import Flask, request, redirect, url_for, send_from_directory
+from flask import Flask, request, redirect, send_from_directory
 import requests, re, random, os
 
 app = Flask(__name__, static_folder="public")
+
 OWNER_FB = "https://www.facebook.com/profile.php?id=61582034805699"
 APPROVAL_KEY = os.environ.get("APPROVAL_KEY", "404")
 
 ua_list = [
-    "Mozilla/5.0 (Linux; Android 10; Wildfire E Lite) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/105.0.5195.136 Mobile Safari/537.36[FBAN/EMA;FBLC/en_US;FBAV/298.0.0.10.115;]",
-    "Mozilla/5.0 (Linux; Android 11; KINGKONG 5 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/87.0.4280.141 Mobile Safari/537.36[FBAN/EMA;FBLC/fr_FR;FBAV/320.0.0.12.108;]",
-    "Mozilla/5.0 (Linux; Android 11; G91 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/106.0.5249.126 Mobile Safari/537.36[FBAN/EMA;FBLC/fr_FR;FBAV/325.0.1.4.108;]"
+    "Mozilla/5.0 (Linux; Android 10; Wildfire E Lite)...",
+    "Mozilla/5.0 (Linux; Android 11; KINGKONG 5 Pro)...",
+    "Mozilla/5.0 (Linux; Android 11; G91 Pro)..."
 ]
 
 def extract_token(cookie, ua):
@@ -35,17 +36,20 @@ def verify():
     if key == APPROVAL_KEY:
         return send_from_directory("public", "share.html")
     else:
-        # redirect to owner fb
         return f"""
-        <html>
-        <head>
+        <html><head>
         <meta http-equiv='refresh' content='2;url={OWNER_FB}'>
         </head>
-        <body style='background:black;color:#ff6b6b;text-align:center;padding-top:100px;font-family:Poppins,Arial,sans-serif;'>
-        ❌ Invalid key! Please contact the owner for approval. Redirecting...
-        </body>
-        </html>
+        <body style='background:black;color:#ff5555;text-align:center;padding-top:100px;font-family:Poppins,sans-serif;'>
+        ❌ Wrong key! Redirecting to owner for approval...
+        </body></html>
         """
+
+
+@app.route("/share.html", methods=["GET"])
+def block_direct_access():
+    # Always redirect to key page unless form submission approved
+    return redirect("/")
 
 
 @app.route("/api/share", methods=["POST"])
