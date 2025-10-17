@@ -1,45 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Share - XrenBoost</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{background:#000;color:#00ffcc;font-family:Poppins,Arial,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-.card{background:rgba(0,0,0,0.8);padding:20px;border:2px solid #00ffcc;border-radius:12px;width:100%;max-width:600px;text-align:center}
-textarea,input{width:100%;padding:10px;border-radius:8px;border:none;background:#111;color:#00ffcc;margin-bottom:10px}
-button{padding:10px 14px;border-radius:8px;border:none;background:#00ffcc;color:#000;font-weight:700;cursor:pointer}
-#log{background:#000;color:#00ffcc;padding:10px;border-radius:8px;border:1px solid #00ffcc;height:60px;overflow:auto;text-align:center;font-weight:bold;}
-</style>
+  <meta charset="UTF-8" />
+  <title>AutoShare Portal</title>
+  <style>
+    body {
+      font-family: Poppins, sans-serif;
+      background: black;
+      color: #00ffcc;
+      text-align: center;
+      padding-top: 100px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      background: #001f1f;
+      border: 1px solid #00ffcc;
+      color: #00ffcc;
+    }
+    button:hover {
+      background: #00ffcc;
+      color: black;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-<div class="card">
-<h3>📤 Facebook AutoShare</h3>
-<textarea id="cookie" rows="3" placeholder="Enter Facebook cookie"></textarea>
-<input id="link" type="text" placeholder="Post link (https://...)"/>
-<input id="limit" type="number" placeholder="Share count"/>
-<button id="sendBtn">Start Sharing</button>
-<div id="log">No activity yet.</div>
-</div>
-<script>
-window.addEventListener("beforeunload",()=>sessionStorage.clear());
-document.getElementById('sendBtn').addEventListener('click',async()=>{
-  const cookie=document.getElementById('cookie').value.trim()
-  const link=document.getElementById('link').value.trim()
-  const limit=document.getElementById('limit').value.trim()
-  const log=document.getElementById('log')
-  if(!cookie||!link||!limit){log.textContent='⚠️ Missing input';return}
-  log.textContent='⏳ Sharing... Please wait'
-  try{
-    const res=await fetch('/api/share',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({cookie,link,limit})
-    })
-    const text=await res.text()
-    log.textContent=text
-  }catch(err){log.textContent='❌ '+err.message}
-})
-</script>
+  <h2>🚀 Facebook AutoShare Portal</h2>
+  <form method="POST">
+    <input type="text" name="post_url" placeholder="Facebook Post URL" required />
+    <input type="number" name="amount" placeholder="Number of shares" required />
+    <br>
+    <button type="submit">Start Sharing</button>
+  </form>
+
+  {% if success == True %}
+  <p style="color: #00ff88;">{{ message }}</p>
+  <p>Shared: {{ shares }} times</p>
+  {% elif success == False %}
+  <p style="color: red;">{{ message }}</p>
+  {% endif %}
 </body>
 </html>
