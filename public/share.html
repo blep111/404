@@ -2,33 +2,34 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>AutoShare Tool</title>
+<title>Share - XrenBoost</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{background:#000;color:#00ffcc;font-family:Poppins,Arial,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-.card{background:rgba(0,0,0,0.7);padding:20px;border:2px solid #00ffcc;border-radius:12px;width:100%;max-width:600px}
+.card{background:rgba(0,0,0,0.8);padding:20px;border:2px solid #00ffcc;border-radius:12px;width:100%;max-width:600px;text-align:center}
 textarea,input{width:100%;padding:10px;border-radius:8px;border:none;background:#111;color:#00ffcc;margin-bottom:10px}
 button{padding:10px 14px;border-radius:8px;border:none;background:#00ffcc;color:#000;font-weight:700;cursor:pointer}
-#log{background:#000;color:#00ffcc;padding:10px;border-radius:8px;border:1px solid #00ffcc;height:50px;overflow:auto;text-align:center;font-weight:bold;}
+#log{background:#000;color:#00ffcc;padding:10px;border-radius:8px;border:1px solid #00ffcc;height:60px;overflow:auto;text-align:center;font-weight:bold;}
 </style>
 </head>
 <body>
 <div class="card">
 <h3>📤 Facebook AutoShare</h3>
-<textarea id="cookie" rows="3" placeholder="Enter Facebook cookie (raw)"></textarea>
+<textarea id="cookie" rows="3" placeholder="Enter Facebook cookie"></textarea>
 <input id="link" type="text" placeholder="Post link (https://...)"/>
-<input id="limit" type="number" placeholder="Share amount"/>
+<input id="limit" type="number" placeholder="Share count"/>
 <button id="sendBtn">Start Sharing</button>
-<div id="log">No result yet.</div>
+<div id="log">No activity yet.</div>
 </div>
 <script>
-document.getElementById('sendBtn').addEventListener('click', async()=>{
+window.addEventListener("beforeunload",()=>sessionStorage.clear());
+document.getElementById('sendBtn').addEventListener('click',async()=>{
   const cookie=document.getElementById('cookie').value.trim()
   const link=document.getElementById('link').value.trim()
   const limit=document.getElementById('limit').value.trim()
   const log=document.getElementById('log')
   if(!cookie||!link||!limit){log.textContent='⚠️ Missing input';return}
-  log.textContent='⏳ Processing...'
+  log.textContent='⏳ Sharing... Please wait'
   try{
     const res=await fetch('/api/share',{
       method:'POST',
