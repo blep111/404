@@ -2,11 +2,11 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Access Key Portal</title>
+<title>Share - XrenBoost Access</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{background:#000;color:#00ffcc;font-family:Poppins,Arial,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-.card{background:rgba(0,0,0,0.7);padding:24px;border:2px solid #00ffcc;border-radius:12px;width:100%;max-width:420px;text-align:center}
+.card{background:rgba(0,0,0,0.8);padding:24px;border:2px solid #00ffcc;border-radius:12px;width:100%;max-width:400px;text-align:center}
 input{width:100%;padding:12px;border-radius:8px;border:none;background:#111;color:#00ffcc;margin-bottom:12px}
 button{width:100%;padding:12px;border-radius:8px;border:none;background:#00ffcc;color:#000;font-weight:700;cursor:pointer}
 </style>
@@ -14,9 +14,9 @@ button{width:100%;padding:12px;border-radius:8px;border:none;background:#00ffcc;
 <body>
 <div class="card">
 <h2>🔐 Enter Access Key</h2>
-<form action="/verify" method="POST">
-<input type="password" name="key" placeholder="Enter your access key" required>
-<button type="submit">Approve</button>
+<form action="/verify" method="POST" onsubmit="sessionStorage.clear();">
+<input type="password" name="key" placeholder="Enter key..." required>
+<button type="submit">Submit</button>
 </form>
 </div>
 </body>
